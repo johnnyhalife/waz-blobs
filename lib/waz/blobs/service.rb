@@ -31,10 +31,8 @@ module WAZ
       end
       
       def set_container_properties(container_name, properties = {})
-        headers = {}
-        properties.each{ |k, v| headers[k.to_s.gsub(/_/, '-')] = v}
         url = generate_request_uri("metadata", container_name)
-        request = generate_request("PUT", url, headers)
+        request = generate_request("PUT", url, properties)
         request.execute()
       end
       
@@ -82,9 +80,9 @@ module WAZ
         return containers
       end
 
-      def put_blob(path, payload, content_type = "application/octet-stream")
+      def put_blob(path, payload, content_type = "application/octet-stream", metadata = {})
         url = generate_request_uri(nil, path)
-        request = generate_request("PUT", url, {"Content-Type" => content_type}, payload)
+        request = generate_request("PUT", url, metadata.merge("Content-Type" => content_type), payload)
         request.execute()
       end
           
@@ -103,30 +101,30 @@ module WAZ
       def get_blob_properties(path)
         url = generate_request_uri("metadata", path)
         request = generate_request("GET", url)
-        request.execute().headers.select {|h| h.start_with? "x-ms-meta" }.map { |h| h.gsub('-', '_').to_sym }
+        request.execute().headers
       end
 
       def set_blob_properties(path, properties ={})
-        headers = {}
-        properties.each{ |k, v| headers[k.to_s.gsub(/_/, '-')] = v}
         url = generate_request_uri("metadata", path)
-        request = generate_request("PUT", url, headers)
+        request = generate_request("PUT", url, properties)
         request.execute()
       end
       
       def generate_request(verb, url, headers = {}, payload = nil)
-        request = RestClient::Request.new(:method => verb, :url => url, :headers => headers, :payload => payload)
+        http_headers = {}
+        headers.each{ |k, v| http_headers[k.to_s.gsub(/_/, '-')] = v}
+        request = RestClient::Request.new(:method => verb, :url => url, :headers => http_headers, :payload => payload)
         request.headers["x-ms-Date"] = Time.new.httpdate
         request.headers["Content-Length"] = (request.payload or "").length
         request.headers["Authorization"] = "SharedKey #{account_name}:#{generate_signature(request)}"
         return request
       end
             
-      def generate_request_uri(operation, path = nil, options = {})
+      def generate_request_uri(operation = nil, path = nil, options = {})
         protocol = use_ssl ? "https" : "http"
         query_params = options.keys.sort{ |a, b| a.to_s <=> b.to_s}.map{ |k| "#{k.to_s.gsub(/_/, '')}=#{options[k]}"}.join("&") unless options.empty?
-        uri = "#{protocol}://#{account_name}.#{base_url}/#{(path or "")}#{operation ? "?comp=" + operation : ""}"
-        uri << "&#{query_params}" if query_params
+        uri = "#{protocol}://#{account_name}.#{base_url}#{(path or "").start_with?("/") ? "" : "/"}#{(path or "")}#{operation ? "?comp=" + operation : ""}"
+        uri << "#{operation ? "&" : "?"}#{query_params}" if query_params
         return uri
       end
       
