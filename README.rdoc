@@ -1,5 +1,5 @@
 = Windows Azure Blobs library -- simple gem for accessing WAZ's Storage Blobs REST API
-
+g
 Client library that will enable you to consume the Windows Azure Storage Service Blobs thru it's REST API. Most of this work is inspired
 on S3 existing APIs although there's some changes  
 
@@ -7,20 +7,19 @@ on S3 existing APIs although there's some changes
 	sudo gem install waz-blobs --source http://gemcutter.org
 
 == Usage: Basics
+	require 'waz-blobs'
 
-require 'waz-blobs'
-
-WAZ::Blobs::Base.establish_connection!(:account_name => your_account_name, :access_key => your_account_key)
+	WAZ::Blobs::Base.establish_connection!(:account_name => your_account_name, :access_key => your_account_key)
 																			
-# creates a container
-container = WAZ::Blobs::Container.create('my-container')
+	# creates a container
+	container = WAZ::Blobs::Container.create('my-container')
 
-# stores a blob with custom properties (metadata)
-blob = container.store('my_blob.txt',  'this is the content of my blob', 'text', {:x_ms_meta_Custom_Property => "custom_value" } )
+	# stores a blob with custom properties (metadata)
+	blob = container.store('my_blob.txt',  'this is the content of my blob', 'text', {:x_ms_meta_Custom_Property => "custom_value" } )
 
-# retrieves a blob value
-blob.value
-		
+	# retrieves a blob value
+	blob.value	
+	
 == Meta
 
 Written by Johnny G. Halife (johnny.halife at me dot com)
