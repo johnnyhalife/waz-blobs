@@ -1,0 +1,12 @@
+require 'rake'
+require 'spec/rake/spectask'
+require 'rubygems'
+require 'dm-core'
+
+Spec::Rake::SpecTask.new('tests_with_rcov') do |t|
+  puts "running tests and code coverage"    
+  t.spec_files = FileList['tests/waz/*.rb']
+  t.rcov = true
+  t.rcov_opts = ['--text-report', '--exclude', ".gem,test,Library,#{ENV['GEM_HOME']}", '--sort', 'coverage' ]
+  t.spec_opts = ['-cfn']
+end

@@ -42,9 +42,5 @@ describe "Base class for connection management" do
                                            :access_key => "accountKey")
     
     WAZ::Blobs::Base.connected?.should == true
-  end
-  
-  it "should be able to tell whether it's connected or not" do
-    WAZ::Blobs::Base.connected?.should == false
-  end
+  end  
 end
