@@ -1,11 +1,3 @@
-require 'restclient'
-require 'time'
-require 'hmac-sha2'
-require 'base64'
-require 'cgi'
-require 'rexml/document'
-require 'rexml/xpath'
-
 module WAZ
   module Blobs
     class Service
@@ -99,8 +91,8 @@ module WAZ
       end
             
       def get_blob_properties(path)
-        url = generate_request_uri("metadata", path)
-        request = generate_request("GET", url)
+        url = generate_request_uri(nil, path)
+        request = generate_request("HEAD", url)
         request.execute().headers
       end
 
@@ -113,7 +105,7 @@ module WAZ
       def generate_request(verb, url, headers = {}, payload = nil)
         http_headers = {}
         headers.each{ |k, v| http_headers[k.to_s.gsub(/_/, '-')] = v}
-        request = RestClient::Request.new(:method => verb, :url => url, :headers => http_headers, :payload => payload)
+        request = RestClient::Request.new(:method => verb.downcase.to_sym, :url => url, :headers => http_headers, :payload => payload)
         request.headers["x-ms-Date"] = Time.new.httpdate
         request.headers["Content-Length"] = (request.payload or "").length
         request.headers["Authorization"] = "SharedKey #{account_name}:#{generate_signature(request)}"
@@ -123,7 +115,6 @@ module WAZ
       def generate_request_uri(operation = nil, path = nil, options = {})
         protocol = use_ssl ? "https" : "http"
         query_params = options.keys.sort{ |a, b| a.to_s <=> b.to_s}.map{ |k| "#{k.to_s.gsub(/_/, '')}=#{options[k]}"}.join("&") unless options.empty?
-        puts path
         uri = "#{protocol}://#{account_name}.#{base_url}#{(path or "").start_with?("/") ? "" : "/"}#{(path or "")}#{operation ? "?comp=" + operation : ""}"
         uri << "#{operation ? "&" : "?"}#{query_params}" if query_params
         return uri
@@ -140,7 +131,7 @@ module WAZ
       end
       
       def generate_signature(request)
-         signature = request.method + "\x0A" +
+         signature = request.method.to_s.upcase + "\x0A" +
                      (request.headers["Content-MD5"] or "") + "\x0A" +
                      (request.headers["Content-Type"] or "") + "\x0A" +
                      (request.headers["Date"] or "")+ "\x0A" +

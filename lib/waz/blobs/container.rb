@@ -1,5 +1,3 @@
-require 'restclient'
-
 module WAZ
   module Blobs
     class Container

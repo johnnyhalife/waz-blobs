@@ -5,7 +5,7 @@ require 'rubygems'
 require 'spec'
 require 'mocha'
 require 'restclient'
-require 'lib/waz/blobs'
+require 'lib/waz-blobs'
 
 describe "Base class for connection management" do
   it "establish connection and set it as default connection" do

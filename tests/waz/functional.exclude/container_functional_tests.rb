@@ -4,8 +4,7 @@ $LOAD_PATH.unshift(File.dirname(__FILE__) + '/../')
 require 'rubygems'
 require 'spec'
 require 'mocha'
-require 'restclient'
-require 'lib/waz/blobs'
+require 'waz-blobs'
 
 describe "blobs service behavior" do
    
@@ -18,7 +17,8 @@ describe "blobs service behavior" do
     container = WAZ::Blobs::Container.find('momo-container')
     container.put_properties(:x_ms_meta_owner => "Ezequiel Morito")
     container.public_access = true
-    container.store("hello.txt", "Hola Don Julio Morito!", "plain/text")
-    puts container["hello.txt"]
+    container.store("hello.txt", "Hola Don Julio Morito y Jedib!", "plain/text")
+    blob = container["hello.txt"]
+    blob.put_properties(:x_ms_meta_owner => "Johnny Halife")
   end
 end

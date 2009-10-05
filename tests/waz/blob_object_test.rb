@@ -6,7 +6,7 @@ require 'spec'
 require 'mocha'
 require 'restclient'
 require 'tests/configuration'
-require 'lib/waz/blobs'
+require 'lib/waz-blobs'
 
 describe "Windows Azure Blobs interface API" do
   it "should return blob path from url" do

@@ -6,7 +6,7 @@ require 'spec'
 require 'mocha'
 require 'restclient'
 require 'tests/configuration'
-require 'lib/waz/blobs'
+require 'lib/waz-blobs'
 
 
 describe "blobs service behavior" do
@@ -150,8 +150,8 @@ describe "blobs service behavior" do
     response = mock()
     response.stubs(:headers).returns(RestClient::Response.beautify_headers({"x-ms-meta-Name" => "customName"}))
     RestClient::Request.any_instance.expects(:execute).returns(response)
-    service.expects(:generate_request_uri).with("metadata", "container/blob").returns("mock-uri")
-    service.expects(:generate_request).with("GET", "mock-uri").returns(RestClient::Request.new(:method => "GET", :url => "http://localhost"))
+    service.expects(:generate_request_uri).with(nil, "container/blob").returns("mock-uri")
+    service.expects(:generate_request).with("HEAD", "mock-uri").returns(RestClient::Request.new(:method => "GET", :url => "http://localhost"))
     service.get_blob_properties("container/blob").should == response.headers
   end
   
