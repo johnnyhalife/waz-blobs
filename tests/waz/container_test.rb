@@ -9,6 +9,14 @@ require 'tests/configuration'
 require 'lib/waz-blobs'
 
 describe "Windows Azure Containers interface API" do 
+  it "should list containers" do
+    WAZ::Blobs::Base.expects(:default_connection).returns({:account_name => "my_account", :access_key => "key"})
+    WAZ::Blobs::Service.any_instance.expects(:list_containers).returns([{:name => 'my_container'}, {:name => 'other container'}])
+    containers = WAZ::Blobs::Container.list
+    containers.size.should == 2
+    containers.first().name.should == "my_container"
+  end
+  
   it "should be able to create a container" do
     WAZ::Blobs::Base.expects(:default_connection).returns({:account_name => "my_account", :access_key => "key"})
     WAZ::Blobs::Service.any_instance.expects(:create_container).with("my_container")

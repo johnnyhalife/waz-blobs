@@ -3,12 +3,12 @@
 Client library that will enable you to consume the Windows Azure Storage Service Blobs thru it's REST API. Most of this work is inspired
 on S3 existing APIs although there's some changes  
 
-== Usage: Getting started
+== Getting started
 	sudo gem install waz-blobs --source http://gemcutter.org
 
 == Usage: Basics
-This are the basics of interacting with the API, further on this document you will find specific documentation 
-for each operation on the API. 
+These are the basics of interacting with the API, further on this document you will find specific documentation 
+for each operation on the API.
 
 	require 'waz-blobs'
 
@@ -25,7 +25,40 @@ for each operation on the API.
 
 	# retrieves a blob value
 	blob.value	
+
+== Usage: Dealing with containers
+These are the methods implemented from Microsoft's API description available on MSDN at http://msdn.microsoft.com/en-us/library/dd179361.aspx
+
+	# list available containers
+	WAZ::Blobs::Container.list
+
+	# create a container
+	WAZ::Blobs::Container.create('my-container')
 	
+	# get a specific container 
+	my_container = WAZ::Blobs::Container.find('my-container')
+	
+	# get container properties (including default headers)
+	my_container.metadata #=> hash containing beautified metadata (:x_ms_meta_name)
+	
+	# set container properties (should follow x-ms-meta to be persisted)
+	my_container.put_properties(:x_ms_meta_MyProperty => "my value")
+	
+	# get a the value indicating whether the container is public or not
+	my_container.public_access? #=> true or false based on x-ms-prop-publicaccess
+	
+	# set a value indicating whether the container is public or not
+	my_container.public_access = false
+
+	# delete container
+	my_container.destroy!
+	
+	# store a blob on the given container
+	my_container.store('my-blob', blob_content, 'application/xml')
+
+	# retrieve a particular blob from a container
+	my_container['my-blob']
+
 == Meta
 
 Written by Johnny G. Halife (johnny.halife at me dot com)

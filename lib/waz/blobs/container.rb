@@ -17,6 +17,10 @@ module WAZ
           end
         end
         
+        def list(options = {})
+          service_instance.list_containers(options).map { |c| Container.new(c[:name]) }
+        end
+        
         private
           def service_instance
             options = Base.default_connection
