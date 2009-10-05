@@ -52,11 +52,29 @@ module WAZ
       
       def public_access=(value)
         public_access = value
-        service_instance.set_container_acl(value)
+        service_instance.set_container_acl(self.name, value)
       end
       
       def blobs
         service_instance.list_blobs(name).map { |blob| WAZ::Blobs::BlobObject.new(blob[:name], blob[:url], blob[:content_type]) }
+      end
+      
+      def store(blob_name, payload, content_type, options = {})
+        service_instance.put_blob("#{self.name}/#{blob_name}", payload, content_type, options)
+        return BlobObject.new(blob_name, 
+                              service_instance.generate_request_uri(nil, "#{self.name}/#{blob_name}"),
+                              content_type)
+      end
+      
+      def [](blob_name)
+        begin
+          properties = service_instance.get_blob_properties("#{self.name}/#{blob_name}")
+          return BlobObject.new(blob_name, 
+                                service_instance.generate_request_uri(nil, "#{self.name}/#{blob_name}"),
+                                properties[:content_type])
+        rescue RestClient::ResourceNotFound
+          return nil
+        end
       end
       
       private

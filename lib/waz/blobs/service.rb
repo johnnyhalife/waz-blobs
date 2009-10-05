@@ -123,12 +123,13 @@ module WAZ
       def generate_request_uri(operation = nil, path = nil, options = {})
         protocol = use_ssl ? "https" : "http"
         query_params = options.keys.sort{ |a, b| a.to_s <=> b.to_s}.map{ |k| "#{k.to_s.gsub(/_/, '')}=#{options[k]}"}.join("&") unless options.empty?
+        puts path
         uri = "#{protocol}://#{account_name}.#{base_url}#{(path or "").start_with?("/") ? "" : "/"}#{(path or "")}#{operation ? "?comp=" + operation : ""}"
         uri << "#{operation ? "&" : "?"}#{query_params}" if query_params
         return uri
       end
       
-      def canonicalize_headers(headers)
+      def self.canonicalize_headers(headers)
         cannonicalized_headers = headers.keys.select {|h| h.to_s.start_with? 'x-ms'}.map{ |h| "#{h.downcase.strip}:#{headers[h].strip}" }.sort{ |a, b| a <=> b }.join("\x0A")
         return cannonicalized_headers
       end
@@ -143,7 +144,7 @@ module WAZ
                      (request.headers["Content-MD5"] or "") + "\x0A" +
                      (request.headers["Content-Type"] or "") + "\x0A" +
                      (request.headers["Date"] or "")+ "\x0A" +
-                     canonicalize_headers(request.headers) + "\x0A" +
+                     self.class.canonicalize_headers(request.headers) + "\x0A" +
                      canonicalize_message(request.url)
          return Base64.encode64(HMAC::SHA256.new(Base64.decode64(self.account_key)).update(signature.toutf8).digest)
        end

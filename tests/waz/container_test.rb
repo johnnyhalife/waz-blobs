@@ -42,7 +42,7 @@ describe "Windows Azure Containers interface API" do
   it "should be able to set whether the container is public or not" do
     WAZ::Blobs::Base.expects(:default_connection).returns({:account_name => "my_account", :access_key => "key"}).twice()
     WAZ::Blobs::Service.any_instance.expects(:get_container_properties).with("container_name").returns({:x_ms_meta_name => "container_name"})
-    WAZ::Blobs::Service.any_instance.expects(:set_container_acl).with(false)
+    WAZ::Blobs::Service.any_instance.expects(:set_container_acl).with('container_name', false)
     container = WAZ::Blobs::Container.find("container_name")
     container.public_access = false
   end
@@ -82,5 +82,36 @@ describe "Windows Azure Containers interface API" do
     WAZ::Blobs::Service.any_instance.expects(:get_container_properties).with("container_name").raises(RestClient::ResourceNotFound)
     container = WAZ::Blobs::Container.find('container_name')
     container.nil?.should == true
-  end  
+  end
+  
+  it "should be able to put blob inside given container" do
+    WAZ::Blobs::Base.expects(:default_connection).returns({:account_name => "my_account", :access_key => "key"}).at_most(3)
+    WAZ::Blobs::Service.any_instance.expects(:get_container_properties).with("container_name").returns({:x_ms_meta_name => "container_name"})
+    WAZ::Blobs::Service.any_instance.expects(:put_blob).with("container_name/my_blob", "this is the blob content", "text/plain; charset=UTF-8", {:x_ms_meta_custom_property => "customValue"})
+    container = WAZ::Blobs::Container.find("container_name")
+    blob = container.store("my_blob", "this is the blob content", "text/plain; charset=UTF-8", {:x_ms_meta_custom_property => "customValue"})
+    blob.name.should == "my_blob"
+    blob.url.should == "http://my_account.blob.core.windows.net/container_name/my_blob"
+    blob.content_type = "text/plain; charset=UTF-8"
+  end
+  
+  it "should return a specific blob for the given container" do
+    WAZ::Blobs::Base.expects(:default_connection).returns({:account_name => "my_account", :access_key => "key"}).at_most(3)
+    WAZ::Blobs::Service.any_instance.expects(:get_container_properties).with("container_name").returns({:x_ms_meta_name => "container_name"})
+    WAZ::Blobs::Service.any_instance.expects(:get_blob_properties).with("container_name/my_blob").returns({ :content_type => "application/xml" })
+    container = WAZ::Blobs::Container.find("container_name")
+    blob = container['my_blob']
+    blob.name.should == 'my_blob'
+    blob.content_type.should == 'application/xml'
+    blob.url.should == 'http://my_account.blob.core.windows.net/container_name/my_blob'
+  end
+  
+  it "should return nil when the file does not exist" do
+    WAZ::Blobs::Base.expects(:default_connection).returns({:account_name => "my_account", :access_key => "key"}).at_most(2)
+    WAZ::Blobs::Service.any_instance.expects(:get_container_properties).with("container_name").returns({:x_ms_meta_name => "container_name"})
+    WAZ::Blobs::Service.any_instance.expects(:get_blob_properties).with("container_name/my_blob").raises(RestClient::ResourceNotFound)
+    container = WAZ::Blobs::Container.find('container_name')
+    blob = container['my_blob']
+    blob.nil?.should == true
+  end
 end

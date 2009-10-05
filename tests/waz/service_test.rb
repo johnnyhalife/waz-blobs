@@ -189,4 +189,25 @@ describe "storage service core behavior" do
     service = WAZ::Blobs::Service.new("mock-account", "mock-key", true, "localhost")
     service.generate_request_uri(nil, "/container", {:prefix => "p", :other => "other"}).should == "https://mock-account.localhost/container?other=other&prefix=p"
   end
+  
+  it "should canonicalize headers (order lexicographical, trim values, and join by NEW_LINES)" do
+    headers = { "Content-Type" => "application/xml",
+                "x-ms-prop-z" => "p",
+                "x-ms-meta-name" => "a ",
+                "x-other" => "other"}
+
+    WAZ::Blobs::Service.canonicalize_headers(headers).should == "x-ms-meta-name:a\nx-ms-prop-z:p"
+  end
+  
+  it "should return empty string when no MS headers" do
+    headers = { "Content-Type" => "application/xml",
+                "x-other" => "other"}
+
+    WAZ::Blobs::Service.canonicalize_headers(headers).should == ""
+  end
+  
+  it "should cannonicalize message by appending account_name to the request path" do
+    service = WAZ::Blobs::Service.new("mock-account", "mock-key", true, "localhost")
+    service.canonicalize_message("http://localhost/container?comp=list").should == "/mock-account/container?comp=list"
+  end
 end

@@ -9,15 +9,16 @@ require 'lib/waz/blobs'
 
 describe "blobs service behavior" do
    
-  it "should create a container using the API" do
+  it "should satisfy my expectations" do
      options = { :account_name => "copaworkshop", 
                   :access_key => "cEsGVWPxnYQFpwxpqjJEPC1aROCSGlLT9yQCZmGvdGz2s19ZXjso+mV56wAiT+g+JDuIWz8qWNkrpzXBtqCm7g==" }
 
     WAZ::Blobs::Base.establish_connection!(options)
-    WAZ::Blobs::Container.create('custom-container2')
-  end
-  
-  it "should return container properties" do
     
+    container = WAZ::Blobs::Container.find('momo-container')
+    container.put_properties(:x_ms_meta_owner => "Ezequiel Morito")
+    container.public_access = true
+    container.store("hello.txt", "Hola Don Julio Morito!", "plain/text")
+    puts container["hello.txt"]
   end
 end
