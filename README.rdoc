@@ -12,20 +12,18 @@ on S3 existing APIs although there's some changes
 
 	require 'waz-blobs'
 	
-	WAZ::Blobs::Base.establish_connection!(:account_name => your_account_name,
-																				 :access_key => your_account_key)
+	WAZ::Blobs::Base.establish_connection!(:account_name => your_account_name, :access_key => your_account_key)
 																				
 	# creates a container
 	container = WAZ::Blobs::Container.create('my-container')
 	
 	# stores a blob with custom properties (metadata)
-	blob = container.store('my_blob.txt', 
-												 'this is the content of my blob', 
-												 'text', 
-												  {:x_ms_meta_Custom_Property => "custom_value" } )
+	blob = container.store('my_blob.txt',  'this is the content of my blob', 'text', {:x_ms_meta_Custom_Property => "custom_value" } )
 
 	# retrieves a blob value
 	blob.value
+	
+	
 	
 == Meta
 
