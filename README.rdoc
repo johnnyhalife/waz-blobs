@@ -17,6 +17,9 @@ on S3 existing APIs although there's some changes
 	# stores a blob with custom properties (metadata)
 	blob = container.store('my_blob.txt',  'this is the content of my blob', 'text', {:x_ms_meta_Custom_Property => "custom_value" } )
 
+	# return a specific blob from a container
+	blob = container['my_blob.txt'] 
+
 	# retrieves a blob value
 	blob.value	
 	
