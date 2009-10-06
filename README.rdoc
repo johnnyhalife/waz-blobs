@@ -84,7 +84,7 @@ that the API is pretty usable since it covers the basics
 	blob.value = "my new value" #=> this will update the blob content on WAZ
 	
 === Remarks
-Since Windows Azure Blob Storage API doesn't support blobs on the _root container_, there's no support like S3 to put a blob *without a container relationship*, 
+Since Windows Azure Blob Storage API doesn't support blobs on the <em>root container</em>, there's no support like S3 to put a blob <b>without a container relationship</b>, 
 as WAZ support it. I'll add support for that scenario.
 
 == Meta
