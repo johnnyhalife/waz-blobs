@@ -58,6 +58,34 @@ These are the methods implemented from Microsoft's API description available on 
 
 	# retrieve a particular blob from a container
 	my_container['my-blob']
+	
+	# retrieve a blob list from a container
+	my_container.blobs #=> WAZ::Blobs::BlobObject collection
+
+== Usage: Dealing with blobs
+These are the implemented methods of the blob API up to now. The basics are implemented although BLOCKS management is not yet completed, I consider
+that the API is pretty usable since it covers the basics
+
+	# retrieve blob name, uri and content-type
+	blob.name
+	blob.url
+	blob.content_type
+
+	# retrieve blob value 
+	blob.value #=> lazy loaded payload of the blob
+	
+	# retrieve blob metadata (+ properties)
+	blob.metadata #=> hash containing beautified metadata (:x_ms_meta_name)
+	
+	# put blob metadata
+	blob.put_properties(:x_ms_meta_MyProperty => "my value") 
+	
+	# update value
+	blob.value = "my new value" #=> this will update the blob content on WAZ
+	
+=== Remarks
+Since Windows Azure Blob Storage API doesn't support blobs on the _root container_, there's no support like S3 to put a blob *without a container relationship*, 
+as WAZ support it. I'll add support for that scenario.
 
 == Meta
 
