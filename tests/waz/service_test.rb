@@ -5,6 +5,9 @@ require 'rubygems'
 require 'spec'
 require 'mocha'
 require 'restclient'
+require 'time'
+require 'hmac-sha2'
+require 'base64'
 require 'tests/configuration'
 require 'lib/waz-blobs'
 
@@ -208,6 +211,51 @@ describe "storage service core behavior" do
   
   it "should cannonicalize message by appending account_name to the request path" do
     service = WAZ::Blobs::Service.new("mock-account", "mock-key", true, "localhost")
-    service.canonicalize_message("http://localhost/container?comp=list").should == "/mock-account/container?comp=list"
+    service.canonicalize_message("http://ocalhost/container?comp=list").should == "/mock-account/container?comp=list"
+  end
+  
+  it "should generate request with proper headers" do
+    mock_request = RestClient::Request.new(:method => :put, :url => "http://localhost/johnny", :payload => "payload")
+    mock_time = Time.new
+    RestClient::Request.stubs(:new).with(:method => :put, :url => "http://localhost/johnny", :headers => {}, :payload => "payload").returns(mock_request)
+    Time.stubs(:new).returns(mock_time)
+    service = WAZ::Blobs::Service.new("mock-account", "mock-key", true, "localhost")
+    # mock the generate signature method since we want to assert against a know value 
+    service.expects(:generate_signature).with(mock_request).returns("a_mock_signature")
+    
+    request = service.generate_request("PUT", "http://localhost/johnny", nil, "payload")
+    request.headers["x-ms-Date"].should == mock_time.httpdate
+    request.headers["Content-Length"].should == "payload".length
+    request.headers["Authorization"] = "SharedKey mock-account:a_mock_signature"
+  end
+  
+  it "should set content length when it is not provided" do
+    mock_request = RestClient::Request.new(:method => :put, :url => "http://localhost/johnny")
+    mock_time = Time.new
+    RestClient::Request.stubs(:new).with(:method => :put, :url => "http://localhost/johnny", :headers => {}, :payload => nil).returns(mock_request)
+    Time.stubs(:new).returns(mock_time)
+    service = WAZ::Blobs::Service.new("mock-account", "mock-key", true, "localhost")
+    # mock the generate signature method since we want to assert against a know value 
+    service.expects(:generate_signature).with(mock_request).returns("a_mock_signature")
+    
+    request = service.generate_request("PUT", "http://localhost/johnny", nil)
+    request.headers["x-ms-Date"].should == mock_time.httpdate
+    request.headers["Content-Length"].should == 0
+    request.headers["Authorization"] = "SharedKey mock-account:a_mock_signature"
+  end
+  
+  it "should name headers properly when they are provided as symbols" do
+    mock_request = RestClient::Request.new(:method => :put, :url => "http://localhost/johnny")
+    mock_time = Time.new
+    RestClient::Request.stubs(:new).with(:method => :put, :url => "http://localhost/johnny", :headers => {"Content-Type" => "plain/xml"}, :payload => nil).returns(mock_request)
+    Time.stubs(:new).returns(mock_time)
+    service = WAZ::Blobs::Service.new("mock-account", "mock-key", true, "localhost")
+    # mock the generate signature method since we want to assert against a know value 
+    service.expects(:generate_signature).with(mock_request).returns("a_mock_signature")
+    
+    request = service.generate_request("PUT", "http://localhost/johnny", {:Content_Type => "plain/xml"})
+    request.headers["x-ms-Date"].should == mock_time.httpdate
+    request.headers["Content-Length"].should == 0
+    request.headers["Authorization"] = "SharedKey mock-account:a_mock_signature"
   end
 end

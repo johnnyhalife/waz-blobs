@@ -104,7 +104,7 @@ module WAZ
       
       def generate_request(verb, url, headers = {}, payload = nil)
         http_headers = {}
-        headers.each{ |k, v| http_headers[k.to_s.gsub(/_/, '-')] = v}
+        headers.each{ |k, v| http_headers[k.to_s.gsub(/_/, '-')] = v} unless headers.nil?
         request = RestClient::Request.new(:method => verb.downcase.to_sym, :url => url, :headers => http_headers, :payload => payload)
         request.headers["x-ms-Date"] = Time.new.httpdate
         request.headers["Content-Length"] = (request.payload or "").length
